@@ -83,10 +83,7 @@ async function main() {
   );
 
   const refCode = await prompt(chalk.yellow("Enter Referral Code: "));
-  const count = parseInt(await prompt(chalk.yellow("How many do you want: ")));
-  const toAddress = await prompt(
-    chalk.yellow("Enter target address for token transfer: ")
-  );
+  const count = parseInt(await prompt(chalk.yellow("How many do you want?")));
 
   const proxiesLoaded = loadProxies();
   if (!proxiesLoaded) {
@@ -123,30 +120,6 @@ async function main() {
         logMessage(i + 1, count, `Email: ${email}`, "success");
         logMessage(i + 1, count, `Password: ${password}`, "success");
         logMessage(i + 1, count, `Reff To : ${refCode}`, "success");
-        const address = account.result.address;
-
-        try {
-          const checkinResult = await generator.checkinDaily(address);
-          logMessage(i + 1, count, `Checkin Daily Done`, "success");
-
-          if (!checkinResult) {
-            throw new Error("Gagal checkin");
-          }
-
-          const transferResult = await generator.transferToken(
-            email,
-            toAddress,
-            password,
-            60
-          );
-          if (!transferResult) {
-            throw new Error("Gagal transfer token");
-          }
-          logMessage(i + 1, count, `Transfer Token Done`, "success");
-        } catch (error) {
-          logMessage(i + 1, count, error.message, "error");
-          continue;
-        }
       } else {
         logMessage(i + 1, count, "Gagal Membuat Akun", "error");
         if (generator.proxy) {

@@ -171,59 +171,6 @@ class ariChain {
     return null;
   }
 
-  async checkinDaily(address) {
-    const headers = {
-      accept: "*/*",
-      "content-type": "application/x-www-form-urlencoded",
-    };
-    const data = qs.stringify({ address });
-
-    const response = await this.makeRequest(
-      "POST",
-      "https://arichain.io/api/event/checkin",
-      {
-        headers,
-        data,
-      }
-    );
-
-    if (!response) {
-      logMessage(this.currentNum, this.total, "Gagal checkin", "error");
-      return null;
-    }
-    return response.data;
-  }
-
-  async transferToken(email, toAddress, password, amount = 60) {
-    const headers = {
-      accept: "*/*",
-      "content-type": "application/x-www-form-urlencoded",
-    };
-
-    const transferData = qs.stringify({
-      email,
-      to_address: toAddress,
-      pw: password,
-      amount,
-    });
-
-    const response = await this.makeRequest(
-      "POST",
-      "https://arichain.io/api/wallet/transfer_mobile",
-      {
-        headers,
-        data: transferData,
-      }
-    );
-
-    if (!response) {
-      logMessage(this.currentNum, this.total, "Gagal mengirim token", "error");
-      return null;
-    }
-
-    return response.data;
-  }
-
   async registerAccount(email, password) {
     logMessage(this.currentNum, this.total, "Mendaftar Akun...", "process");
 
