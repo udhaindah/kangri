@@ -1,7 +1,6 @@
 # Ari Chain Wallet Auto Referral Bot
 
 This bot automates the process of creating accounts and using referral codes for the StreamAi platform.
-because developer arichain wallet not allowed temp email generator, so im using gmail api for the reff.
 
 ## Features
 
