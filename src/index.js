@@ -1,5 +1,6 @@
 const { prompt, logMessage, rl } = require("./utils/logger");
 const ariChain = require("./classes/ariChain");
+const { generateRandomPassword } = require("./utils/generator");
 const { authorize } = require("./classes/authGmail");
 const { getRandomProxy, loadProxies } = require("./classes/proxy");
 
@@ -101,7 +102,7 @@ async function main() {
 
     try {
       const email = generator.generateTempEmail();
-      const password = `P@ssw0rd${Math.floor(Math.random() * 1000)}`;
+      const password = generateRandomPassword();
 
       const emailSent = await generator.sendEmailCode(email);
       if (!emailSent) continue;
