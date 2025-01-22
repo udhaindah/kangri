@@ -120,6 +120,14 @@ class ariChain {
         "process"
       );
 
+      logMessage(
+        this.currentNum,
+        this.total,
+        "Menunggu 10 detik untuk pesan baru...",
+        "warning"
+      );
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+
       const messages = await this.gmailClient.users.messages.list({
         userId: "me",
         q: `to:${tempEmail}`,
@@ -253,8 +261,8 @@ class ariChain {
       }
     );
 
-    if (!response) {
-      logMessage(this.currentNum, this.total, "Gagal Daftar", "error");
+    if (response.data.status === "fail") {
+      logMessage(this.currentNum, this.total, response.data.msg, "error");
       return null;
     }
 
