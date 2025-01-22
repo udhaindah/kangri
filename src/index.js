@@ -83,10 +83,10 @@ async function main() {
   );
 
   const refCode = await prompt(chalk.yellow("Enter Referral Code: "));
-  const count = parseInt(await prompt(chalk.yellow("How many do you want? ")));
   const toAddress = await prompt(
     chalk.yellow("Enter target address for token transfer: ")
   );
+  const count = parseInt(await prompt(chalk.yellow("How many do you want? ")));
 
   const proxiesLoaded = loadProxies();
   if (!proxiesLoaded) {
