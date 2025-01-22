@@ -3,14 +3,23 @@ class EmailGenerator {
     this.baseEmail = baseEmail;
   }
 
-  generatePlusVariations() {
+  generateCaseVariations() {
     const [username, domain] = this.baseEmail.split("@");
-    const randomString = Math.random().toString(36).substring(2, 8);
-    return `${username}+${randomString}@${domain}`;
+    let newUsername = "";
+
+    for (let char of username) {
+      if (Math.random() < 0.5) {
+        newUsername += char.toUpperCase();
+      } else {
+        newUsername += char.toLowerCase();
+      }
+    }
+
+    return `${newUsername}@${domain}`;
   }
 
   generateRandomVariation() {
-    return this.generatePlusVariations();
+    return this.generateCaseVariations();
   }
 }
 
