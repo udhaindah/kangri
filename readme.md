@@ -13,6 +13,7 @@ This bot automates the process of creating accounts and using referral codes for
 
 - Node.js 18 v18.20.5 LTS or latest.
 - npm (Node Package Manager)
+- Resolve captcha using gemini, success rate maybe 60-70%, you can modify prompt yourself for increase success rate. to change prompt you can change it in `client_secret.json`
 
 ## Installation
 
@@ -40,7 +41,9 @@ This bot automates the process of creating accounts and using referral codes for
    - Create OAuth 2.0 credentials for a native application.
    - Download the `client_secret.json` open it and copy paste to `src/json/client_secret.json`.
    - Don't forget to change the email referral verification in `client_secret.json`.
+   - Change gemini apikey in `client_secret.json`.
 
+Get gemini apikey : [Here](https://aistudio.google.com/app/apikey)
 Tutorial video, how to get api credentials : [Here](https://t.me/elpuqus/138)
 
 ## Usage

@@ -90,7 +90,7 @@ async function main() {
 
   const proxiesLoaded = loadProxies();
   if (!proxiesLoaded) {
-    console.log(chalk.yellow("No proxies available. Using default IP."));
+    console.log(chalk.yellow("No proxy available. Using default IP."));
   }
   let successful = 0;
 
@@ -119,7 +119,7 @@ async function main() {
         accountAri.write("-".repeat(85) + "\n");
 
         successful++;
-        logMessage(i + 1, count, "Akun Berhasil Dibuat!", "success");
+        logMessage(i + 1, count, "Account Success Create!", "success");
         logMessage(i + 1, count, `Email: ${email}`, "success");
         logMessage(i + 1, count, `Password: ${password}`, "success");
         logMessage(i + 1, count, `Reff To : ${refCode}`, "success");
@@ -146,7 +146,7 @@ async function main() {
           continue;
         }
       } else {
-        logMessage(i + 1, count, "Gagal Membuat Akun", "error");
+        logMessage(i + 1, count, "Register Account Failed", "error");
         if (generator.proxy) {
           logMessage(i + 1, count, `Failed proxy: ${generator.proxy}`, "error");
         }
@@ -158,15 +158,9 @@ async function main() {
 
   accountAri.end();
 
-  console.log(chalk.magenta("\n[*] Selesai!"));
-  console.log(
-    chalk.green(
-      `[*] Akun yang berhasil dibuat ${successful} dari ${count} akun`
-    )
-  );
-  console.log(
-    chalk.magenta("[*] Hasil disimpan di accounts.txt dan accountsBot.txt")
-  );
+  console.log(chalk.magenta("\n[*] Dono bang!"));
+  console.log(chalk.green(`[*] Account dono ${successful} dari ${count} akun`));
+  console.log(chalk.magenta("[*] Result in accounts.txt"));
   rl.close();
 }
 

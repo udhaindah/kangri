@@ -9,7 +9,14 @@ const TOKEN_PATH = path.join(__dirname, "../json/token.json");
 const confEmail = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "../json/client_secret.json"))
 ).email;
+const confApi = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "../json/client_secret.json"))
+).geminiApi;
+const gemeiniPrompt = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "../json/client_secret.json"))
+).prompt;
 const qs = require("qs");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 function loadOAuth2Client() {
   const credentials = JSON.parse(
@@ -39,6 +46,10 @@ class ariChain {
       auth: loadOAuth2Client(),
     });
     this.baseEmail = confEmail;
+    this.gemini = new GoogleGenerativeAI(confApi);
+    this.model = this.gemini.getGenerativeModel({
+      model: "gemini-1.5-flash",
+    });
   }
 
   async makeRequest(method, url, config = {}) {
@@ -75,31 +86,122 @@ class ariChain {
     logMessage(
       this.currentNum,
       this.total,
-      `Email dibuat: ${tempEmail}`,
+      `Email using: ${tempEmail}`,
       "success"
     );
     return tempEmail;
+  }
+
+  async getCaptchaCode() {
+    try {
+      const headers = {
+        accept: "*/*",
+      };
+      const response = await this.makeRequest(
+        "POST",
+        "https://arichain.io/api/captcha/create",
+        { headers }
+      );
+      logMessage(
+        this.currentNum,
+        this.total,
+        "Get captcha code done...",
+        "success"
+      );
+      return response;
+    } catch {
+      console.error("Error create captcha :", error);
+      return null;
+    }
+  }
+
+  async getCaptchaImage(uniqueIdx) {
+    try {
+      const response = await this.makeRequest(
+        "GET",
+        `http://arichain.io/api/captcha/get?unique_idx=${uniqueIdx}`,
+        { responseType: "arraybuffer" }
+      );
+      logMessage(
+        this.currentNum,
+        this.total,
+        "Get captcha image done...",
+        "success"
+      );
+      return response.data;
+    } catch {
+      console.error("Error get image captcha:", error);
+      return null;
+    }
+  }
+
+  async solveCaptchaWithGemini(imageBuffer) {
+    try {
+      const prompt = gemeiniPrompt;
+      const image = {
+        inlineData: {
+          data: Buffer.from(imageBuffer).toString("base64"),
+          mimeType: "image/png",
+        },
+      };
+
+      const result = await this.model.generateContent([prompt, image]);
+      const captchaText = result.response.text().trim();
+      const cleanedCaptchaText = captchaText.replace(/\s/g, "");
+
+      logMessage(
+        this.currentNum,
+        this.total,
+        "Solve captcha done...",
+        "success"
+      );
+      return cleanedCaptchaText;
+    } catch (error) {
+      console.error("Error solving CAPTCHA with Gemini:", error);
+      return null;
+    }
   }
 
   async sendEmailCode(email) {
     logMessage(
       this.currentNum,
       this.total,
-      "mengirim code ke email...",
+      "Proccesing send emaill code...",
       "process"
     );
+
+    const captchaResponse = await this.getCaptchaCode();
+    const uniqueIdx = captchaResponse.data.result.unique_idx;
+    const captchaImageBuffer = await this.getCaptchaImage(uniqueIdx);
+    const captchaText = await this.solveCaptchaWithGemini(captchaImageBuffer);
+
     const headers = {
       accept: "*/*",
       "content-type": "application/x-www-form-urlencoded",
     };
-    const data = qs.stringify({ email });
+
+    const data = qs.stringify({
+      email: email,
+      unique_idx: uniqueIdx,
+      captcha_string: captchaText,
+    });
+
     const response = await this.makeRequest(
       "POST",
       "https://arichain.io/api/Email/send_valid_email",
       { headers, data }
     );
-    if (!response) return false;
-    logMessage(this.currentNum, this.total, "Email tersedia", "success");
+
+    if (!response) {
+      logMessage(this.currentNum, this.total, "Failed send email", "error");
+      return false;
+    }
+
+    if (response.data.status === "fail") {
+      logMessage(this.currentNum, this.total, response.data.msg, "error");
+      return null;
+    }
+
     return true;
   }
 
@@ -107,7 +209,7 @@ class ariChain {
     logMessage(
       this.currentNum,
       this.total,
-      "Menunggu kode verifikasi...",
+      "Waiting for code verification...",
       "process"
     );
 
@@ -116,14 +218,14 @@ class ariChain {
       logMessage(
         this.currentNum,
         this.total,
-        `Percobaan ${attempt + 1}`,
+        `Attempt ${attempt + 1}`,
         "process"
       );
 
       logMessage(
         this.currentNum,
         this.total,
-        "Menunggu 10 detik untuk pesan baru...",
+        "Waiting for 10sec...",
         "warning"
       );
       await new Promise((resolve) => setTimeout(resolve, 10000));
@@ -153,7 +255,7 @@ class ariChain {
             logMessage(
               this.currentNum,
               this.total,
-              `Kode Verifikasi ditemukan: ${verificationCode}`,
+              `Verificatin code found: ${verificationCode}`,
               "success"
             );
             return verificationCode;
@@ -164,7 +266,7 @@ class ariChain {
       logMessage(
         this.currentNum,
         this.total,
-        "Kode belum tersedia. Menunggu 5 detik sebelum mencoba lagi...",
+        "Verification code not found. Waiting for 5 sec...",
         "warning"
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -173,7 +275,7 @@ class ariChain {
     logMessage(
       this.currentNum,
       this.total,
-      "Gagal mendapatkan kode verifikasi setelah beberapa percobaan.",
+      "Error get code verification.",
       "error"
     );
     return null;
@@ -194,11 +296,12 @@ class ariChain {
       }
     );
     if (!response) {
-      logMessage(this.currentNum, this.total, "Gagal checkin", "error");
+      logMessage(this.currentNum, this.total, "Failed checkin", "error");
       return null;
     }
     return response.data;
   }
+
   async transferToken(email, toAddress, password, amount = 60) {
     const headers = {
       accept: "*/*",
@@ -219,21 +322,21 @@ class ariChain {
       }
     );
     if (!response) {
-      logMessage(this.currentNum, this.total, "Gagal mengirim token", "error");
+      logMessage(this.currentNum, this.total, "Failed send token", "error");
       return null;
     }
     return response.data;
   }
 
   async registerAccount(email, password) {
-    logMessage(this.currentNum, this.total, "Mendaftar Akun...", "process");
+    logMessage(this.currentNum, this.total, "Register account...", "process");
 
     const verifyCode = await this.getCodeVerification(email);
     if (!verifyCode) {
       logMessage(
         this.currentNum,
         this.total,
-        "Gagal mendapatkan kode verifikasi. Registrasi dibatalkan.",
+        "Failed get code verification.",
         "error"
       );
       return null;
@@ -266,7 +369,7 @@ class ariChain {
       return null;
     }
 
-    logMessage(this.currentNum, this.total, "Daftar akun berhasil", "success");
+    logMessage(this.currentNum, this.total, "Register succes.", "success");
 
     return response.data;
   }

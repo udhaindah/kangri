@@ -11,6 +11,7 @@
   "dependencies": {
     "@faker-js/faker": "^9.3.0",
     "@google-cloud/local-auth": "^3.0.1",
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.7.9",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0",

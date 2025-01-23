@@ -36,14 +36,14 @@ function loadProxies() {
       });
 
     if (proxyList.length === 0) {
-      throw new Error("No proxies found in proxies.txt");
+      throw new Error("No proxies found in proxy.txt");
     }
     console.log(
-      chalk.green(`✓ Loaded ${proxyList.length} proxies from proxies.txt`)
+      chalk.green(`✓ Loaded ${proxyList.length} proxies from proxy.txt`)
     );
     return true;
   } catch (error) {
-    console.error(chalk.red(`[!] Error loading proxies: ${error.message}`));
+    console.error(chalk.red(`[!] Error loading proxy: ${error.message}`));
     return false;
   }
 }
