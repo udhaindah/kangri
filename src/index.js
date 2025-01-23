@@ -82,12 +82,15 @@ async function main() {
   `)
   );
 
+  const use2CaptchaResponse = await prompt(
+    chalk.yellow("Use 2Captcha ? (y/n): ")
+  );
+  const use2Captcha = use2CaptchaResponse.toLowerCase() === "y";
   const refCode = await prompt(chalk.yellow("Enter Referral Code: "));
   const toAddress = await prompt(
     chalk.yellow("Enter target address for token transfer: ")
   );
   const count = parseInt(await prompt(chalk.yellow("How many do you want? ")));
-
   const proxiesLoaded = loadProxies();
   if (!proxiesLoaded) {
     console.log(chalk.yellow("No proxy available. Using default IP."));
@@ -107,7 +110,7 @@ async function main() {
       const email = generator.generateTempEmail();
       const password = generateRandomPassword();
 
-      const emailSent = await generator.sendEmailCode(email);
+      const emailSent = await generator.sendEmailCode(email, use2Captcha);
       if (!emailSent) continue;
 
       const account = await generator.registerAccount(email, password);

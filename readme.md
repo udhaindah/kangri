@@ -13,7 +13,7 @@ This bot automates the process of creating accounts and using referral codes for
 
 - Node.js 18 v18.20.5 LTS or latest.
 - npm (Node Package Manager)
-- Resolve captcha using gemini, success rate maybe 60-70%, you can modify prompt yourself for increase success rate. to change prompt you can change it in `client_secret.json`
+- Use 2Captcha Services [2Captcha](https://2captcha.com/), free version you can using gemini apikey.
 
 ## Installation
 
@@ -35,6 +35,7 @@ This bot automates the process of creating accounts and using referral codes for
 4. change `client_secret.json.example` to `client_secret.json`.
 
 5. Set up Gmail API credentials:
+
    - Go to the [Google Cloud Console](https://console.developers.google.com/).
    - Create a new project.
    - Enable the Gmail API for the project.
@@ -43,7 +44,10 @@ This bot automates the process of creating accounts and using referral codes for
    - Don't forget to change the email referral verification in `client_secret.json`.
    - Change gemini apikey in `client_secret.json`.
 
+6. If you want using 2 Captcha service you can fill your apikey in `client_secret.json` and change `"captha2Apikey": "your_2captcha_apikey",` with your apikey.
+
 Get gemini apikey : [Here](https://aistudio.google.com/app/apikey)
+
 Tutorial video, how to get api credentials : [Here](https://t.me/elpuqus/138)
 
 ## Usage
@@ -54,7 +58,7 @@ Tutorial video, how to get api credentials : [Here](https://t.me/elpuqus/138)
    node main.js
    ```
 
-2. Follow the prompts to enter your referral code and the number of accounts you want to create.
+2. Follow the prompts to enter your referral code, address to transfer token and the number of accounts you want to create, and dont forget too choice your solve captcha too.
 
 3. If this is your first time running the bot, you will be prompted to authorize the application to access your Gmail account. Follow the instructions to complete the authorization.
 

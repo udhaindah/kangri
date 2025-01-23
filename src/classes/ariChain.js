@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { Solver } = require("@2captcha/captcha-solver");
 const { google } = require("googleapis");
 const { logMessage } = require("../utils/logger");
 const { getProxyAgent } = require("./proxy");
@@ -15,6 +16,9 @@ const confApi = JSON.parse(
 const gemeiniPrompt = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "../json/client_secret.json"))
 ).prompt;
+const captchaApi = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "../json/client_secret.json"))
+).captha2Apikey;
 const qs = require("qs");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -50,6 +54,7 @@ class ariChain {
     this.model = this.gemini.getGenerativeModel({
       model: "gemini-1.5-flash",
     });
+    this.twoCaptchaSolver = new Solver(captchaApi);
   }
 
   async makeRequest(method, url, config = {}) {
@@ -102,12 +107,6 @@ class ariChain {
         "https://arichain.io/api/captcha/create",
         { headers }
       );
-      logMessage(
-        this.currentNum,
-        this.total,
-        "Get captcha code done...",
-        "success"
-      );
       return response;
     } catch {
       console.error("Error create captcha :", error);
@@ -121,12 +120,6 @@ class ariChain {
         "GET",
         `http://arichain.io/api/captcha/get?unique_idx=${uniqueIdx}`,
         { responseType: "arraybuffer" }
-      );
-      logMessage(
-        this.currentNum,
-        this.total,
-        "Get captcha image done...",
-        "success"
       );
       return response.data;
     } catch {
@@ -162,7 +155,20 @@ class ariChain {
     }
   }
 
-  async sendEmailCode(email) {
+  async solveCaptchaWith2Captcha(imageBuffer) {
+    try {
+      const base64Image = Buffer.from(imageBuffer).toString("base64");
+      const res = await this.twoCaptchaSolver.imageCaptcha({
+        body: `data:image/png;base64,${base64Image}`,
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error solving CAPTCHA with 2Captcha:", error);
+      return null;
+    }
+  }
+
+  async sendEmailCode(email, use2Captcha = false) {
     logMessage(
       this.currentNum,
       this.total,
@@ -173,7 +179,13 @@ class ariChain {
     const captchaResponse = await this.getCaptchaCode();
     const uniqueIdx = captchaResponse.data.result.unique_idx;
     const captchaImageBuffer = await this.getCaptchaImage(uniqueIdx);
-    const captchaText = await this.solveCaptchaWithGemini(captchaImageBuffer);
+    let captchaText;
+
+    if (use2Captcha) {
+      captchaText = await this.solveCaptchaWith2Captcha(captchaImageBuffer);
+    } else {
+      captchaText = await this.solveCaptchaWithGemini(captchaImageBuffer);
+    }
 
     const headers = {
       accept: "*/*",
